@@ -6,9 +6,56 @@
 # квадратами элементов исходного списка
 # [1, 2, 4, 0] --> [1, 4, 16, 0]
 
+"""
+
+from random import randint
+
+numbers = []
+for i in range(10):
+    numbers.append(randint(-5, 5))
+
+print('Исходный список:')
+print(numbers)
+print()
+
+numbers2 = []
+for i in numbers:
+    numbers2.append(i ** 2)
+
+print('Cписок в квадрате:')
+print(numbers2)
+
+"""
+
 # Задание-2:
 # Даны два списка фруктов.
 # Получить список фруктов, присутствующих в обоих исходных списках.
+
+"""
+
+fruits1 = ['яблоко', 'мандарин', 'банан', 'абрикос', 'груша',
+           'апельсин', 'слива', 'манго', 'папайя', 'персик']
+fruits2 = ['авокадо', 'манго', 'помело', 'апельсин', 'мангостин',
+           'груша', 'гуава', 'банан', 'киви', 'яблоко']
+fruits3 = []
+
+print('Список фруктов №1:')
+print(fruits1)
+print()
+print('Список фруктов №2:')
+print(fruits2)
+print()
+
+for f1 in fruits1:
+    for f2 in fruits2:
+        if f1 == f2:
+            fruits3.append(f1)
+
+print('Список фруктов №3, присутствующих в списках №1 и №2:')
+print(fruits3)
+
+"""
+
 
 # Задание-3:
 # Дан список, заполненный произвольными числами.
@@ -16,3 +63,27 @@
 # + Элемент кратен 3
 # + Элемент положительный
 # + Элемент не кратен 4
+
+"""
+
+from random import randint
+
+numbers = []
+for i in range(30):
+    numbers.append(randint(-10, 1000))
+
+print('Исходный список:')
+print(numbers)
+print()
+
+newnumbers = []
+for i in numbers:
+    if i > 0:
+        if i%3 == 0:
+            if i%4 != 0:
+                newnumbers.append(i)
+
+print('Список, удовлетворяющий условиям:')
+print(newnumbers)
+
+"""

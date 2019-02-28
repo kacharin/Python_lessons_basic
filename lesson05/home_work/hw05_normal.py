@@ -13,3 +13,78 @@
 # Для решения данной задачи используйте алгоритмы из задания easy,
 # оформленные в виде соответствующих функций,
 # и импортированные в данный файл из easy.py
+
+import os
+
+from hw05_defs import goto, listdir, makedir, removedir, exitprog, action
+
+whattodo = {
+    '1': goto(),
+    '2': listdir(),
+    '3': makedir(),
+    '4': removedir(),
+    '5': exitprog(),
+}
+
+message = """
+Добро пожаловать в систумную утилиту!
+
+Вот что она умеет:
+1 - Перейти в папку.
+2 - Просмотреть содержимое текущей папки.
+3 - Удалить папку.
+4 - Создать папку.
+5 - Завершить программу.
+"""
+print(message)
+
+action()
+
+"""
+# Содержимое файла hw05_defs.py
+def goto():
+    dirgo = input('Введите полный путь до директории в которую хотите перейти: ')
+    try:
+        os.chdir(dirgo)
+        print('Вы успешно перешли в нужную диреткорию.')
+        action()
+    except:
+        print('Что то пошло не так... Не удалось изменит директорию.')
+        action()
+
+def listdir():
+    print('Содержание текущей директории:')
+    print(os.listdir())
+    action()
+
+def makedir():
+    dirmake = input('Введите название директории которую хотите создать: ')
+    try:
+        os.mkdir(dirmake)
+        print('Вы успешно создали нужную диреткорию.')
+        action()
+    except:
+        print('Что то пошло не так... Не удалось создать директорию.')
+        action()
+
+def removedir():
+    dirremove = input('Введите название директории которую хотите создать: ')
+    try:
+        os.rmdir(dirremove)
+        print('Вы успешно удалили нужную диреткорию.')
+        action()
+    except:
+        print('Что то пошло не так... Не удалось удалить директорию.')
+        action()
+
+def exitprog():
+    pass
+
+def action():
+    actiondo = input('Введите цифру, которая соответсвует нужному действию: ')
+    if  bool(whattodo.get(actiondo)) == True:
+        whattodo(actiondo)
+    else:
+        print('Такого действия пока нет... Повторите попытку!')
+        action()
+"""

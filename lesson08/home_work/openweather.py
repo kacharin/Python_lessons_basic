@@ -123,3 +123,144 @@ OpenWeatherMap — онлайн-сервис, который предостав�
 
 """
 
+import urllib.request
+import os
+import sys
+import gzip
+import json
+import sqlite3
+import re
+
+
+def preparations():
+    """Подготовка к работе программы:
+    получение ключей, имен городов, создание или проверка базы данных
+    """
+    # Getting APPID
+    appid_key = open('app.id').read().strip()
+
+    # Downloading city names
+    url = 'http://bulk.openweathermap.org/sample/city.list.json.gz'
+    try:
+        os.stat('data')
+    except FileNotFoundError:
+        os.mkdir('data')
+
+    out = os.path.join('data', 'city.list.json.gz')
+
+    try:
+        os.stat(out)
+    except FileNotFoundError:
+        urllib.request.urlretrieve(url, out)
+
+    # Unzipping city names
+    cities = gzip.open(out, 'rb').read().decode()
+
+    # List of dictionaries with cities' info
+    city_names = [json.loads(line) for line in cities.split('\n')[:-1]]
+
+    # DB creation and filling in
+    path_db = os.path.join('data', 'weather.db')
+
+    # DB existence checking
+    try:
+        os.stat(path_db)
+    except FileNotFoundError:
+        with sqlite3.connect(path_db) as conn:
+                curs = conn.cursor()
+                curs.execute("""
+                             CREATE TABLE Weather (
+                             City_id INTEGER PRIMARY KEY,
+                             City_name VARCHAR(255),
+                             Date DATE,
+                             Temperature INTEGER,
+                             Weather_id INTEGER
+                             );
+                             """)
+    return appid_key, city_names
+# Filling in DB if it's not existing
+# def db_filling(path, data):
+#     with sqlite3.connect(path) as conn:
+#         curs = conn.cursor()
+#         curs.execute("""
+#                      CREATE TABLE Weather (
+#                      City Name TEXT PRIMARY KEY,
+#                      Coordinates BLOB,
+#                      ID INTEGER PRIMARY KEY,
+#                      Country TEXT,
+#                      );
+#                      """)
+#         curs.executemany("INSERT INTO Weather VALUES (?, ?, ?, ?)", data)
+
+
+def weatherrequest(name, unit):
+    """Запрос погоды по Id города
+    Получение данных в формате JSON и обработка
+    """
+    for num in range(len(cityNames)):
+        if name == cityNames[num]['name']:
+            city_id = 'id=' + str(cityNames[num]['_id'])
+    metr = 'units=' + unit
+    final_url = 'http://api.openweathermap.org/data/2.5/weather?' + city_id + \
+                metr + '&lang=ru&appid=' + appid
+    webdata = urllib.request.urlopen(final_url)
+    # encoding = webdata.info().get_content_charset('utf-8')
+    weatherdata = json.loads(webdata)
+    return weatherdata
+
+if __name__ == '__main__':
+    while True:
+        start = input('Начнём работу? (y\\n)\n>>> ').lower()
+        if start == 'y':
+            print('Загрузка...')
+            appid, cityNames = preparations()
+            break
+        elif start == 'n':
+            sys.exit()
+        else:
+            print("Непонятный ввод")
+
+    while True:
+        metric = input('Температура в Цельсиях или Фаренгейтах? (C\F)\n>>> ').lower()
+        if metric == 'c':
+            units = 'metric'
+            break
+        elif metric == 'f':
+            units = 'imperial'
+            break
+        else:
+            print('Нет других метрик')
+
+    while True:
+        weatherdata = None
+        cityName = input('Введите название города: ').title()
+        if cityName == 'Exit':
+            sys.exit()
+        catches = []
+        for line in cityNames:
+            if cityName == line['name']:
+                weatherdata = weatherrequest(cityName, units)
+                break
+            elif line['name'].startswith(cityName[:int(len(cityName) / 1.5)]):
+                catches.append(line['name'])
+        if weatherdata is not None:
+            break
+        print("Уточните название")
+        if len(catches):
+            print("Возможные варианты:")
+            print('\n'.join(catches))
+        else:
+            print('не обнаружено совпадений')
+
+    conn = sqlite3.connect(os.path.join('data', 'weather.db'))
+    curs = conn.cursor()
+    curs.execute('INSERT INTO Weather '
+                 'VALUES ({}, {}, {}, {}, {})'.format(weatherdata['id'],
+                                                      weatherdata['name'],
+                                                      weatherdata['dt'],
+                                                      weatherdata['main']['temp'],
+                                                      weatherdata['weather']['id']))
+    conn.commit()
+    res = curs.execute('SELECT * FROM Weather')
+    res.fetchall()
+    conn.close()
